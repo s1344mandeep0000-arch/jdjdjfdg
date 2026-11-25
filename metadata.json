@@ -1,0 +1,6 @@
+{
+  "name": "Minecraft AI Mod Maker Studio",
+  "description": "AI-powered studio for creating Minecraft Java Edition mods and Bedrock Edition add-ons with automatic blocks, items, mobs, textures, models, and exportable packages.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
