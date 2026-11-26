@@ -113,6 +113,7 @@ export interface AppSettings {
   reasoningDepth: ReasoningDepth;
   autoSaveProjects: boolean;
   includeBedrockScripts: boolean;
+  apiBaseUrl: string;
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -122,4 +123,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   reasoningDepth: 'medium',
   autoSaveProjects: true,
   includeBedrockScripts: true,
+  apiBaseUrl: '',
 };

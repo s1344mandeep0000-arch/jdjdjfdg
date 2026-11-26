@@ -1,0 +1,70 @@
+apply plugin: 'com.android.application'
+
+def envKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+def envKeystorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+def envKeyAlias = System.getenv("ANDROID_KEY_ALIAS")
+def envKeyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+def envVersionCode = System.getenv("ANDROID_VERSION_CODE")
+def envApiBaseUrl = System.getenv("ANDROID_API_BASE_URL") ?: "https://ais-pre-kva3g2btcikpfqxb6q42ye-1009424168425.asia-east1.run.app"
+def hasReleaseKeystore = envKeystorePath != null && !envKeystorePath.trim().isEmpty() && file(envKeystorePath).exists()
+
+android {
+    namespace = "com.minecraftmodstudio.ai"
+    compileSdk = rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId "com.minecraftmodstudio.ai"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode envVersionCode != null && !envVersionCode.trim().isEmpty() ? envVersionCode.toInteger() : 1
+        versionName "1.0.0"
+        vectorDrawables.useSupportLibrary = true
+        buildConfigField "String", "DEFAULT_API_BASE_URL", "\"${envApiBaseUrl}\""
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseKeystore) {
+                storeFile file(envKeystorePath)
+                storePassword envKeystorePassword ?: ""
+                keyAlias envKeyAlias ?: ""
+                keyPassword envKeyPassword ?: (envKeystorePassword ?: "")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "com.google.android.material:material:$materialVersion"
+    implementation "androidx.recyclerview:recyclerview:$androidxRecyclerViewVersion"
+    implementation "androidx.drawerlayout:drawerlayout:$androidxDrawerLayoutVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$androidxConstraintLayoutVersion"
+    implementation "androidx.core:core:$androidxCoreVersion"
+
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.json:json:20240303"
+    androidTestImplementation "androidx.test.ext:junit:1.2.1"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.6.1"
+}

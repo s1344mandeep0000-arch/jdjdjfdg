@@ -1,0 +1,130 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android-apk:
+    name: Build Pure Java Android Debug & Signed Release APKs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Node dependencies & verify AI backend/web app
+        run: |
+          npm ci
+          npm run lint
+          npx tsx --test src/utils/modPackage.test.ts src/utils/apiConfig.test.ts
+          npm run build
+
+      - name: Configure Android APK signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          KEYSTORE_FILE="${{ github.workspace }}/android/app/release.keystore"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Decoding configured release keystore from GitHub Secrets..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_FILE"
+            echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_FILE" >> "$GITHUB_ENV"
+            echo "ANDROID_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "ANDROID_KEY_PASSWORD=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}" >> "$GITHUB_ENV"
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret found; generating CI release signing keystore..."
+            keytool -genkeypair -v \
+              -keystore "$KEYSTORE_FILE" \
+              -alias mcmodstudio \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass android \
+              -keypass android \
+              -dname "CN=Minecraft AI Mod Maker Studio, OU=Mobile, O=ModStudio, L=San Francisco, ST=CA, C=US"
+            echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_FILE" >> "$GITHUB_ENV"
+            echo "ANDROID_KEYSTORE_PASSWORD=android" >> "$GITHUB_ENV"
+            echo "ANDROID_KEY_ALIAS=mcmodstudio" >> "$GITHUB_ENV"
+            echo "ANDROID_KEY_PASSWORD=android" >> "$GITHUB_ENV"
+          fi
+          echo "ANDROID_VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
+          if [ -n "${{ vars.ANDROID_API_BASE_URL }}" ]; then
+            echo "ANDROID_API_BASE_URL=${{ vars.ANDROID_API_BASE_URL }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x android/gradlew
+
+      - name: Run Android Java Unit Tests
+        working-directory: android
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Build Debug & Signed Release APKs
+        working-directory: android
+        run: ./gradlew assembleDebug assembleRelease --no-daemon
+
+      - name: Package and verify APK artifacts
+        run: |
+          DEBUG_DIR="android/app/build/outputs/apk/debug"
+          RELEASE_DIR="android/app/build/outputs/apk/release"
+          DIST_DIR="android/dist-apks"
+          mkdir -p "$DIST_DIR"
+
+          DEBUG_APK=$(find "$DEBUG_DIR" -maxdepth 1 -name "*.apk" | head -n 1)
+          RELEASE_APK=$(find "$RELEASE_DIR" -maxdepth 1 -name "*.apk" | head -n 1)
+
+          if [ -z "$DEBUG_APK" ] || [ -z "$RELEASE_APK" ]; then
+            echo "Error: Missing expected debug or release APK."
+            ls -lh "$DEBUG_DIR" "$RELEASE_DIR" || true
+            exit 1
+          fi
+
+          cp "$DEBUG_APK" "$DIST_DIR/Minecraft-AI-Mod-Maker-Studio-debug.apk"
+          cp "$RELEASE_APK" "$DIST_DIR/Minecraft-AI-Mod-Maker-Studio-release.apk"
+          ls -lh "$DIST_DIR"
+
+          if command -v apksigner >/dev/null 2>&1; then
+            apksigner verify --verbose "$DIST_DIR/Minecraft-AI-Mod-Maker-Studio-release.apk"
+          fi
+
+      - name: Upload Debug & Release Android APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: minecraft-ai-mod-maker-studio-apks
+          path: |
+            android/dist-apks/Minecraft-AI-Mod-Maker-Studio-debug.apk
+            android/dist-apks/Minecraft-AI-Mod-Maker-Studio-release.apk
+          retention-days: 30
+          if-no-files-found: error

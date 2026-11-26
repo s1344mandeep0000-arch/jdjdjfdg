@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Minecraft AI Mod Maker Studio</string>
+    <string name="title_activity_main">Minecraft AI Mod Maker Studio</string>
+    <string name="studio_drawer_title">Minecraft AI Studio</string>
+    <string name="ai_pro">AI Pro</string>
+    <string name="suggestion_create_mod">Create a Minecraft Mod</string>
+    <string name="suggestion_generate_addon">Generate Minecraft Add-on</string>
+    <string name="suggestion_design_elements">Design Blocks, Items &amp; Mobs</string>
+    <string name="composer_hint">Describe your Minecraft mod idea...</string>
+    <string name="new_chat">New Chat</string>
+    <string name="search_hint">Search chats or projects...</string>
+    <string name="tab_chat_history">Chat History</string>
+    <string name="tab_saved_projects">Saved Projects</string>
+    <string name="ai_model_settings">AI Model Settings</string>
+    <string name="settings_label">Settings</string>
+    <string name="mod_preview">Mod Preview</string>
+    <string name="mod_preview_title">Mod Preview</string>
+    <string name="create_variation">Create Variation</string>
+    <string name="export_addon">Export .mcaddon</string>
+    <string name="export_zip">Export Mod .zip</string>
+    <string name="try_again">Try again</string>
+    <string name="done">Done</string>
+    <string name="cancel">Cancel</string>
+    <string name="generate">Generate</string>
+    <string name="share">Share</string>
+    <string name="copy">Copy</string>
+    <string name="save_png">Save PNG</string>
+    <string name="save_file">Save File</string>
+    <string name="empty_history">No chat history yet. Describe a mod idea to get started.</string>
+    <string name="empty_projects">No saved mod projects yet. Generated mods are saved here automatically.</string>
+    <string name="variation_title">Customize variation tweaks (optional)</string>
+    <string name="variation_hint">e.g. Emerald color scheme and faster dash cooldown...</string>
+    <string name="preset_colors">Alternate color palette &amp; glowing textures</string>
+    <string name="preset_behavior">Stronger mob behavior &amp; boss abilities</string>
+    <string name="preset_fire">Fire &amp; magma elemental twist</string>
+    <string name="cd_menu">Open navigation menu</string>
+    <string name="cd_new_chat">Start new chat</string>
+    <string name="cd_attach">Attach reference image or mod file</string>
+    <string name="cd_mic">Voice dictation</string>
+    <string name="cd_send_or_voice">AI Voice or Send mod idea</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_save_project">Save to projects</string>
+    <string name="cd_delete">Delete item</string>
+</resources>

@@ -148,6 +148,23 @@ async function startServer() {
   const app = express();
   app.use(express.json({ limit: '12mb' }));
 
+  app.use('/api', (req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
+
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true, service: 'minecraft-ai-mod-maker-studio' });
   });
@@ -178,6 +195,7 @@ async function startServer() {
         reasoningDepth: body.settings?.reasoningDepth ?? 'medium',
         autoSaveProjects: body.settings?.autoSaveProjects ?? true,
         includeBedrockScripts: body.settings?.includeBedrockScripts ?? true,
+        apiBaseUrl: body.settings?.apiBaseUrl ?? '',
       };
 
       sendEvent('step', {

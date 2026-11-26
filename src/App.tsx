@@ -18,6 +18,7 @@ import type {
 } from './types/mod';
 import { exportModArchive } from './utils/exportZip';
 import { buildVariationPrompt } from './utils/modPackage';
+import { resolveApiUrl } from './utils/apiConfig';
 import {
   loadAppSettings,
   loadSavedProjects,
@@ -244,7 +245,11 @@ export default function App() {
       };
 
       try {
-        const response = await fetch('/api/mods/generate', {
+        const apiUrl = resolveApiUrl('/api/mods/generate', {
+          configuredBaseUrl: settings.apiBaseUrl,
+          envBaseUrl: import.meta.env.VITE_API_BASE_URL,
+        });
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

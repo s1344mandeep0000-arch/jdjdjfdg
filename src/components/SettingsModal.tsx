@@ -214,6 +214,28 @@ export function SettingsModal({
                 />
               </label>
 
+              <div className="space-y-1.5 pt-1">
+                <label
+                  htmlFor="backend-url-input"
+                  className="block text-xs font-semibold text-[#52525B]"
+                >
+                  Cloud Backend URL (Android APK)
+                </label>
+                <input
+                  id="backend-url-input"
+                  type="url"
+                  value={settings.apiBaseUrl}
+                  onChange={(e) =>
+                    onUpdateSettings({
+                      ...settings,
+                      apiBaseUrl: e.target.value,
+                    })
+                  }
+                  placeholder="Default studio backend (leave blank for web)"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E4E4E7] bg-[#FAFAFA] text-xs text-[#0D0D0D] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#3B82F6]"
+                />
+              </div>
+
               <div className="pt-3 border-t border-[#E4E4E7] space-y-2">
                 <button
                   type="button"
